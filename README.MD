@@ -11,7 +11,8 @@ This action creates s3 bucket and upload the example.txt in the bucket.
 3. Run the code below in the terminal.
 
 ```sh
-act push --secret-file .env
+act -W .github/workflows/ci.local.yml push --secret-file .env
+
 ```
 
 ### Credits: https://github.com/nektos/act
