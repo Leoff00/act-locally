@@ -1,0 +1,43 @@
+name: create aws s3 bucket
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install unzip
+        run: |
+          apt-get update
+          apt-get install -y unzip
+          apt-get install -y unzip ca-certificates
+
+      - name: "Configure AWS Credentials action for GitHub Actions"
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v3.1.1
+        with:
+          terraform_version: 1.9.3
+
+      - name: Terraform init
+        id: init
+        run: terraform init
+
+      - name: Terraform plan
+        id: plan
+        run: terraform plan -var-file="dev.tfvars" -out="tfplan.out"
+
+      - name: Terraform apply
+        id: apply
+        run: |
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} terraform apply -var-file="dev.tfvars" -auto-approve
